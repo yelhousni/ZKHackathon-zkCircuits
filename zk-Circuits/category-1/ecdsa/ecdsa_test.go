@@ -166,5 +166,5 @@ func BenchmarkECDSA(b *testing.B) {
 	p := profile.Start()
 	_, _ = frontend.Compile(testCurve.ScalarField(), r1cs.NewBuilder, &c)
 	p.Stop()
-	fmt.Println("R1CS: ", p.NbConstraints())
+	fmt.Println("⏱️  ECDSA on secp256k1 verifier in a BN254 R1CS circuit: ", p.NbConstraints(), "constraints.")
 }
