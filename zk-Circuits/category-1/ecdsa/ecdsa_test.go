@@ -7,7 +7,6 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark-crypto/ecc/secp256k1/ecdsa"
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/frontend/cs/r1cs"
@@ -65,7 +64,7 @@ func TestEcdsaPreHashed(t *testing.T) {
 		},
 	}
 	assert := test.NewAssert(t)
-	err := test.IsSolved(&circuit, &witness, ecc.BN254.ScalarField())
+	err := test.IsSolved(&circuit, &witness, testCurve.ScalarField())
 	assert.NoError(err)
 }
 
@@ -114,7 +113,7 @@ func TestEcdsaSHA256(t *testing.T) {
 		},
 	}
 	assert := test.NewAssert(t)
-	err := test.IsSolved(&circuit, &witness, ecc.BN254.ScalarField())
+	err := test.IsSolved(&circuit, &witness, testCurve.ScalarField())
 	assert.NoError(err)
 }
 
@@ -165,7 +164,7 @@ func ExamplePublicKey_Verify_create() {
 func BenchmarkECDSA(b *testing.B) {
 	var c EcdsaCircuit[emulated.Secp256k1Fp, emulated.Secp256k1Fr]
 	p := profile.Start()
-	_, _ = frontend.Compile(ecc.BN254.ScalarField(), r1cs.NewBuilder, &c)
+	_, _ = frontend.Compile(testCurve.ScalarField(), r1cs.NewBuilder, &c)
 	p.Stop()
 	fmt.Println("R1CS: ", p.NbConstraints())
 }
