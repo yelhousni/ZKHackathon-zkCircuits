@@ -1,4 +1,4 @@
-package bls_sig
+package pairing_bn254
 
 import (
 	"errors"

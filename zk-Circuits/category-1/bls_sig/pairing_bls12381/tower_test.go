@@ -1,11 +1,11 @@
-package bls_sig
+package pairing_bls12381
 
 import (
 	"testing"
 
 	"github.com/consensys/gnark-crypto/ecc"
-	"github.com/consensys/gnark-crypto/ecc/bn254"
-	"github.com/consensys/gnark-crypto/ecc/bn254/fp"
+	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
+	"github.com/consensys/gnark-crypto/ecc/bls12-381/fp"
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/math/emulated"
 	"github.com/consensys/gnark/test"
@@ -26,7 +26,7 @@ func TestAddFp2(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, b, c bn254.E2
+	var a, b, c bls12381.E2
 	_, _ = a.SetRandom()
 	_, _ = b.SetRandom()
 	c.Add(&a, &b)
@@ -57,7 +57,7 @@ func TestSubFp2(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, b, c bn254.E2
+	var a, b, c bls12381.E2
 	_, _ = a.SetRandom()
 	_, _ = b.SetRandom()
 	c.Sub(&a, &b)
@@ -88,7 +88,7 @@ func TestDoubleFp2(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, b, c bn254.E2
+	var a, b, c bls12381.E2
 	_, _ = a.SetRandom()
 	_, _ = b.SetRandom()
 	c.Double(&a)
@@ -118,7 +118,7 @@ func TestMulFp2(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, b, c bn254.E2
+	var a, b, c bls12381.E2
 	_, _ = a.SetRandom()
 	_, _ = b.SetRandom()
 	c.Mul(&a, &b)
@@ -149,7 +149,7 @@ func TestSquareFp2(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c bn254.E2
+	var a, c bls12381.E2
 	_, _ = a.SetRandom()
 	c.Square(&a)
 
@@ -178,7 +178,7 @@ func TestDivFp2(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, b, c bn254.E2
+	var a, b, c bls12381.E2
 	_, _ = a.SetRandom()
 	_, _ = b.SetRandom()
 	c.Div(&a, &b)
@@ -212,7 +212,7 @@ func TestMulByElement(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c bn254.E2
+	var a, c bls12381.E2
 	var b fp.Element
 	_, _ = a.SetRandom()
 	_, _ = b.SetRandom()
@@ -220,7 +220,7 @@ func TestMulByElement(t *testing.T) {
 
 	witness := e2MulByElement{
 		A: FromE2(&a),
-		B: emulated.ValueOf[emulated.BN254Fp](b),
+		B: emulated.ValueOf[emulated.BLS12381Fp](b),
 		C: FromE2(&c),
 	}
 
@@ -246,7 +246,7 @@ func TestMulFp2ByNonResidue(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c bn254.E2
+	var a, c bls12381.E2
 	_, _ = a.SetRandom()
 	c.MulByNonResidue(&a)
 
@@ -277,7 +277,7 @@ func TestNegFp2(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c bn254.E2
+	var a, c bls12381.E2
 	_, _ = a.SetRandom()
 	c.Neg(&a)
 
@@ -307,7 +307,7 @@ func TestConjugateFp2(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c bn254.E2
+	var a, c bls12381.E2
 	_, _ = a.SetRandom()
 	c.Conjugate(&a)
 
@@ -337,7 +337,7 @@ func TestInverseFp2(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c bn254.E2
+	var a, c bls12381.E2
 	_, _ = a.SetRandom()
 	c.Inverse(&a)
 
@@ -365,7 +365,7 @@ func TestAddFp6(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, b, c bn254.E6
+	var a, b, c bls12381.E6
 	_, _ = a.SetRandom()
 	_, _ = b.SetRandom()
 	c.Add(&a, &b)
@@ -396,7 +396,7 @@ func TestSubFp6(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, b, c bn254.E6
+	var a, b, c bls12381.E6
 	_, _ = a.SetRandom()
 	_, _ = b.SetRandom()
 	c.Sub(&a, &b)
@@ -427,7 +427,7 @@ func TestMulFp6(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, b, c bn254.E6
+	var a, b, c bls12381.E6
 	_, _ = a.SetRandom()
 	_, _ = b.SetRandom()
 	c.Mul(&a, &b)
@@ -458,7 +458,7 @@ func TestSquareFp6(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c bn254.E6
+	var a, c bls12381.E6
 	_, _ = a.SetRandom()
 	c.Square(&a)
 
@@ -487,7 +487,7 @@ func TestDivFp6(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, b, c bn254.E6
+	var a, b, c bls12381.E6
 	_, _ = a.SetRandom()
 	_, _ = b.SetRandom()
 	c.Div(&a, &b)
@@ -520,7 +520,7 @@ func TestMulFp6ByNonResidue(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c bn254.E6
+	var a, c bls12381.E6
 	_, _ = a.SetRandom()
 	c.MulByNonResidue(&a)
 
@@ -552,8 +552,8 @@ func TestMulFp6ByE2(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c bn254.E6
-	var b bn254.E2
+	var a, c bls12381.E6
+	var b bls12381.E2
 	_, _ = a.SetRandom()
 	_, _ = b.SetRandom()
 	c.MulByE2(&a, &b)
@@ -587,8 +587,8 @@ func TestMulFp6By01(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c bn254.E6
-	var C0, C1 bn254.E2
+	var a, c bls12381.E6
+	var C0, C1 bls12381.E2
 	_, _ = a.SetRandom()
 	_, _ = C0.SetRandom()
 	_, _ = C1.SetRandom()
@@ -603,42 +603,6 @@ func TestMulFp6By01(t *testing.T) {
 	}
 
 	err := test.IsSolved(&e6MulBy01{}, &witness, ecc.BN254.ScalarField())
-	assert.NoError(err)
-
-}
-
-type e6MulBy0 struct {
-	A  E6
-	C0 E2
-	C  E6 `gnark:",public"`
-}
-
-func (circuit *e6MulBy0) Define(api frontend.API) error {
-	e := NewExt6(api)
-	expected := e.MulBy0(&circuit.A, &circuit.C0)
-	e.AssertIsEqual(expected, &circuit.C)
-
-	return nil
-}
-
-func TestMulFp6By0(t *testing.T) {
-
-	assert := test.NewAssert(t)
-	// witness values
-	var a, c bn254.E6
-	var C0, zero bn254.E2
-	_, _ = a.SetRandom()
-	_, _ = C0.SetRandom()
-	c.Set(&a)
-	c.MulBy01(&C0, &zero)
-
-	witness := e6MulBy0{
-		A:  FromE6(&a),
-		C0: FromE2(&C0),
-		C:  FromE6(&c),
-	}
-
-	err := test.IsSolved(&e6MulBy0{}, &witness, ecc.BN254.ScalarField())
 	assert.NoError(err)
 
 }
@@ -660,7 +624,7 @@ func TestNegFp6(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c bn254.E6
+	var a, c bls12381.E6
 	_, _ = a.SetRandom()
 	c.Neg(&a)
 
@@ -690,7 +654,7 @@ func TestInverseFp6(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c bn254.E6
+	var a, c bls12381.E6
 	_, _ = a.SetRandom()
 	c.Inverse(&a)
 
@@ -718,7 +682,7 @@ func TestAddFp12(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, b, c bn254.E12
+	var a, b, c bls12381.E12
 	_, _ = a.SetRandom()
 	_, _ = b.SetRandom()
 	c.Add(&a, &b)
@@ -749,7 +713,7 @@ func TestSubFp12(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, b, c bn254.E12
+	var a, b, c bls12381.E12
 	_, _ = a.SetRandom()
 	_, _ = b.SetRandom()
 	c.Sub(&a, &b)
@@ -780,7 +744,7 @@ func TestMulFp12(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, b, c bn254.E12
+	var a, b, c bls12381.E12
 	_, _ = a.SetRandom()
 	_, _ = b.SetRandom()
 	c.Mul(&a, &b)
@@ -811,7 +775,7 @@ func TestDivFp12(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, b, c bn254.E12
+	var a, b, c bls12381.E12
 	_, _ = a.SetRandom()
 	_, _ = b.SetRandom()
 	c.Div(&a, &b)
@@ -842,7 +806,7 @@ func TestSquareFp12(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c bn254.E12
+	var a, c bls12381.E12
 	_, _ = a.SetRandom()
 	c.Square(&a)
 
@@ -873,7 +837,7 @@ func TestConjugateFp12(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c bn254.E12
+	var a, c bls12381.E12
 	_, _ = a.SetRandom()
 	c.Conjugate(&a)
 
@@ -903,7 +867,7 @@ func TestInverseFp12(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c bn254.E12
+	var a, c bls12381.E12
 	_, _ = a.SetRandom()
 	c.Inverse(&a)
 
@@ -934,11 +898,11 @@ func TestFp12ExptTorus(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c bn254.E12
+	var a, c bls12381.E12
 	_, _ = a.SetRandom()
 
 	// put a in the cyclotomic subgroup
-	var tmp bn254.E12
+	var tmp bls12381.E12
 	tmp.Conjugate(&a)
 	a.Inverse(&a)
 	tmp.Mul(&tmp, &a)
@@ -955,40 +919,40 @@ func TestFp12ExptTorus(t *testing.T) {
 	assert.NoError(err)
 }
 
-type e12MulBy034 struct {
+type e12MulBy014 struct {
 	A    E12 `gnark:",public"`
 	W    E12
 	B, C E2
 }
 
-func (circuit *e12MulBy034) Define(api frontend.API) error {
+func (circuit *e12MulBy014) Define(api frontend.API) error {
 	e := NewExt12(api)
-	res := e.MulBy034(&circuit.A, &circuit.B, &circuit.C)
+	res := e.MulBy014(&circuit.A, &circuit.B, &circuit.C)
 	e.AssertIsEqual(res, &circuit.W)
 	return nil
 }
 
-func TestFp12MulBy034(t *testing.T) {
+func TestFp12MulBy014(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, w bn254.E12
+	var a, w bls12381.E12
 	_, _ = a.SetRandom()
-	var one, b, c bn254.E2
+	var one, b, c bls12381.E2
 	one.SetOne()
 	_, _ = b.SetRandom()
 	_, _ = c.SetRandom()
 	w.Set(&a)
-	w.MulBy034(&one, &b, &c)
+	w.MulBy014(&b, &c, &one)
 
-	witness := e12MulBy034{
+	witness := e12MulBy014{
 		A: FromE12(&a),
 		B: FromE2(&b),
 		C: FromE2(&c),
 		W: FromE12(&w),
 	}
 
-	err := test.IsSolved(&e12MulBy034{}, &witness, ecc.BN254.ScalarField())
+	err := test.IsSolved(&e12MulBy014{}, &witness, ecc.BN254.ScalarField())
 	assert.NoError(err)
 
 }
@@ -1010,11 +974,11 @@ func TestTorusCompress(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a bn254.E12
+	var a bls12381.E12
 	_, _ = a.SetRandom()
 
 	// put a in the cyclotomic subgroup
-	var tmp bn254.E12
+	var tmp bls12381.E12
 	tmp.Conjugate(&a)
 	a.Inverse(&a)
 	tmp.Mul(&tmp, &a)
@@ -1048,11 +1012,11 @@ func TestTorusDecompress(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a bn254.E12
+	var a bls12381.E12
 	_, _ = a.SetRandom()
 
 	// put a in the cyclotomic subgroup
-	var tmp bn254.E12
+	var tmp bls12381.E12
 	tmp.Conjugate(&a)
 	a.Inverse(&a)
 	tmp.Mul(&tmp, &a)
@@ -1090,7 +1054,7 @@ func TestTorusMul(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, b, c, tmp bn254.E12
+	var a, b, c, tmp bls12381.E12
 	_, _ = a.SetRandom()
 	_, _ = b.SetRandom()
 
@@ -1136,7 +1100,7 @@ func TestTorusInverse(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c, tmp bn254.E12
+	var a, c, tmp bls12381.E12
 	_, _ = a.SetRandom()
 
 	// put a in the cyclotomic subgroup
@@ -1175,7 +1139,7 @@ func TestTorusFrobenius(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c, tmp bn254.E12
+	var a, c, tmp bls12381.E12
 	_, _ = a.SetRandom()
 
 	// put a in the cyclotomic subgroup
@@ -1214,7 +1178,7 @@ func TestTorusFrobeniusSquare(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c, tmp bn254.E12
+	var a, c, tmp bls12381.E12
 	_, _ = a.SetRandom()
 
 	// put a in the cyclotomic subgroup
@@ -1232,45 +1196,6 @@ func TestTorusFrobeniusSquare(t *testing.T) {
 	}
 
 	err := test.IsSolved(&torusFrobeniusSquare{}, &witness, ecc.BN254.ScalarField())
-	assert.NoError(err)
-}
-
-type torusFrobeniusCube struct {
-	A E12
-	C E12 `gnark:",public"`
-}
-
-func (circuit *torusFrobeniusCube) Define(api frontend.API) error {
-	e := NewExt12(api)
-	compressed := e.CompressTorus(&circuit.A)
-	compressed = e.FrobeniusCubeTorus(compressed)
-	expected := e.DecompressTorus(compressed)
-	e.AssertIsEqual(expected, &circuit.C)
-	return nil
-}
-
-func TestTorusFrobeniusCube(t *testing.T) {
-
-	assert := test.NewAssert(t)
-	// witness values
-	var a, c, tmp bn254.E12
-	_, _ = a.SetRandom()
-
-	// put a in the cyclotomic subgroup
-	tmp.Conjugate(&a)
-	a.Inverse(&a)
-	tmp.Mul(&tmp, &a)
-	a.FrobeniusSquare(&tmp).Mul(&a, &tmp)
-
-	// uncompressed frobeniusCube
-	c.FrobeniusCube(&a)
-
-	witness := torusFrobeniusCube{
-		A: FromE12(&a),
-		C: FromE12(&c),
-	}
-
-	err := test.IsSolved(&torusFrobeniusCube{}, &witness, ecc.BN254.ScalarField())
 	assert.NoError(err)
 }
 
@@ -1292,7 +1217,7 @@ func TestTorusSquare(t *testing.T) {
 
 	assert := test.NewAssert(t)
 	// witness values
-	var a, c, tmp bn254.E12
+	var a, c, tmp bls12381.E12
 	_, _ = a.SetRandom()
 
 	// put a in the cyclotomic subgroup

@@ -12,22 +12,23 @@ import (
 	"github.com/consensys/gnark/frontend/cs/r1cs"
 	"github.com/consensys/gnark/profile"
 	"github.com/consensys/gnark/test"
+	bn "github.com/yelhousni/ZKHackathon/zk-Circuits/category-1/bls_sig/pairing_bn254"
 )
 
 type blsVerifyCircuit struct {
-	PK  G1Affine
-	Sig G2Affine
-	HM  G2Affine
+	PK  bn.G1Affine
+	Sig bn.G2Affine
+	HM  bn.G2Affine
 }
 
 func (c *blsVerifyCircuit) Define(api frontend.API) error {
-	pairing, err := NewPairing(api)
+	bls, err := NewBLS(api)
 	if err != nil {
 		return fmt.Errorf("new pairing: %w", err)
 
 	}
 
-	pairing.VerifyBLS(&c.PK, &c.Sig, &c.HM)
+	bls.VerifyBLS(&c.PK, &c.Sig, &c.HM)
 	return nil
 
 }
@@ -59,9 +60,9 @@ func TestBLSVerifyTestSolve(t *testing.T) {
 	Sig.ScalarMultiplication(&HM, secret)
 
 	witness := &blsVerifyCircuit{
-		PK:  NewG1Affine(PK),
-		Sig: NewG2Affine(Sig),
-		HM:  NewG2Affine(HM),
+		PK:  bn.NewG1Affine(PK),
+		Sig: bn.NewG2Affine(Sig),
+		HM:  bn.NewG2Affine(HM),
 	}
 
 	err = test.IsSolved(&blsVerifyCircuit{}, witness, ecc.BN254.ScalarField())

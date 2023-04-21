@@ -1,15 +1,15 @@
-package bls_sig
+package pairing_bls12381
 
 import (
 	"math/big"
 
-	"github.com/consensys/gnark-crypto/ecc/bn254"
+	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/math/emulated"
 )
 
-type curveF = emulated.Field[emulated.BN254Fp]
-type baseEl = emulated.Element[emulated.BN254Fp]
+type curveF = emulated.Field[emulated.BLS12381Fp]
+type baseEl = emulated.Element[emulated.BLS12381Fp]
 
 type E2 struct {
 	A0, A1 baseEl
@@ -22,7 +22,7 @@ type Ext2 struct {
 }
 
 func NewExt2(api frontend.API) *Ext2 {
-	fp, err := emulated.NewField[emulated.BN254Fp](api)
+	fp, err := emulated.NewField[emulated.BLS12381Fp](api)
 	if err != nil {
 		panic(err)
 	}
@@ -31,24 +31,24 @@ func NewExt2(api frontend.API) *Ext2 {
 		A1 string
 	}{
 		1: {
-			1: {"8376118865763821496583973867626364092589906065868298776909617916018768340080", "16469823323077808223889137241176536799009286646108169935659301613961712198316"},
-			2: {"21575463638280843010398324269430826099269044274347216827212613867836435027261", "10307601595873709700152284273816112264069230130616436755625194854815875713954"},
-			3: {"2821565182194536844548159561693502659359617185244120367078079554186484126554", "3505843767911556378687030309984248845540243509899259641013678093033130930403"},
-			4: {"2581911344467009335267311115468803099551665605076196740867805258568234346338", "19937756971775647987995932169929341994314640652964949448313374472400716661030"},
-			5: {"685108087231508774477564247770172212460312782337200605669322048753928464687", "8447204650696766136447902020341177575205426561248465145919723016860428151883"},
+			1: {"3850754370037169011952147076051364057158807420970682438676050522613628423219637725072182697113062777891589506424760", "151655185184498381465642749684540099398075398968325446656007613510403227271200139370504932015952886146304766135027"},
+			2: {"0", "4002409555221667392624310435006688643935503118305586438271171395842971157480381377015405980053539358417135540939436"},
+			3: {"1028732146235106349975324479215795277384839936929757896155643118032610843298655225875571310552543014690878354869257", "1028732146235106349975324479215795277384839936929757896155643118032610843298655225875571310552543014690878354869257"},
+			4: {"4002409555221667392624310435006688643935503118305586438271171395842971157480381377015405980053539358417135540939437", "0"},
+			5: {"877076961050607968509681729531255177986764537961432449499635504522207616027455086505066378536590128544573588734230", "3125332594171059424908108096204648978570118281977575435832422631601824034463382777937621250592425535493320683825557"},
 		},
-		3: {
-			1: {"11697423496358154304825782922584725312912383441159505038794027105778954184319", "303847389135065887422783454877609941456349188919719272345083954437860409601"},
-			2: {"3772000881919853776433695186713858239009073593817195771773381919316419345261", "2236595495967245188281701248203181795121068902605861227855261137820944008926"},
-			3: {"19066677689644738377698246183563772429336693972053703295610958340458742082029", "18382399103927718843559375435273026243156067647398564021675359801612095278180"},
-			4: {"5324479202449903542726783395506214481928257762400643279780343368557297135718", "16208900380737693084919495127334387981393726419856888799917914180988844123039"},
-			5: {"8941241848238582420466759817324047081148088512956452953208002715982955420483", "10338197737521362862238855242243140895517409139741313354160881284257516364953"},
+		2: {
+			1: {"793479390729215512621379701633421447060886740281060493010456487427281649075476305620758731620351", "0"},
+			2: {"793479390729215512621379701633421447060886740281060493010456487427281649075476305620758731620350", "0"},
+			3: {"4002409555221667393417789825735904156556882819939007885332058136124031650490837864442687629129015664037894272559786", "0"},
+			4: {"4002409555221667392624310435006688643935503118305586438271171395842971157480381377015405980053539358417135540939436", "0"},
+			5: {"4002409555221667392624310435006688643935503118305586438271171395842971157480381377015405980053539358417135540939437", "0"},
 		},
 	}
 	nonResidues := make(map[int]map[int]*E2)
 	for pwr, v := range pwrs {
 		for coeff, v := range v {
-			el := E2{emulated.ValueOf[emulated.BN254Fp](v.A0), emulated.ValueOf[emulated.BN254Fp](v.A1)}
+			el := E2{emulated.ValueOf[emulated.BLS12381Fp](v.A0), emulated.ValueOf[emulated.BLS12381Fp](v.A1)}
 			if nonResidues[pwr] == nil {
 				nonResidues[pwr] = make(map[int]*E2)
 			}
@@ -91,112 +91,96 @@ func (e Ext2) MulByNonResidueGeneric(x *E2, power, coef int) *E2 {
 	return z
 }
 
-// MulByNonResidue return x*(9+u)
+// MulByNonResidue returns x*(1+u)
 func (e Ext2) MulByNonResidue(x *E2) *E2 {
-	nine := big.NewInt(9)
-	a := e.fp.MulConst(&x.A0, nine)
-	a = e.fp.Sub(a, &x.A1)
-	b := e.fp.MulConst(&x.A1, nine)
-	b = e.fp.Add(b, &x.A0)
+	a := e.fp.Sub(&x.A0, &x.A1)
+	b := e.fp.Add(&x.A0, &x.A1)
+
 	return &E2{
 		A0: *a,
 		A1: *b,
 	}
 }
 
-// MulByNonResidue1Power1 returns x*(9+u)^(1*(p^1-1)/6)
+// MulByNonResidue1Power1 returns x*(1+u)^(1*(p^1-1)/6)
 func (e Ext2) MulByNonResidue1Power1(x *E2) *E2 {
 	return e.MulByNonResidueGeneric(x, 1, 1)
 }
 
-// MulByNonResidue1Power2 returns x*(9+u)^(2*(p^1-1)/6)
+// MulByNonResidue1Power2 returns x*(1+u)^(2*(p^1-1)/6)
 func (e Ext2) MulByNonResidue1Power2(x *E2) *E2 {
-	return e.MulByNonResidueGeneric(x, 1, 2)
+	element := emulated.ValueOf[emulated.BLS12381Fp]("4002409555221667392624310435006688643935503118305586438271171395842971157480381377015405980053539358417135540939436")
+	a := e.fp.MulMod(&x.A1, &element)
+	a = e.fp.Neg(a)
+	b := e.fp.MulMod(&x.A0, &element)
+	return &E2{
+		A0: *a,
+		A1: *b,
+	}
 }
 
-// MulByNonResidue1Power3 returns x*(9+u)^(3*(p^1-1)/6)
+// MulByNonResidue1Power3 returns x*(1+u)^(3*(p^1-1)/6)
 func (e Ext2) MulByNonResidue1Power3(x *E2) *E2 {
 	return e.MulByNonResidueGeneric(x, 1, 3)
 }
 
-// MulByNonResidue1Power4 returns x*(9+u)^(4*(p^1-1)/6)
+// MulByNonResidue1Power4 returns x*(1+u)^(4*(p^1-1)/6)
 func (e Ext2) MulByNonResidue1Power4(x *E2) *E2 {
-	return e.MulByNonResidueGeneric(x, 1, 4)
+	element := emulated.ValueOf[emulated.BLS12381Fp]("4002409555221667392624310435006688643935503118305586438271171395842971157480381377015405980053539358417135540939437")
+	return &E2{
+		A0: *e.fp.MulMod(&x.A0, &element),
+		A1: *e.fp.MulMod(&x.A1, &element),
+	}
 }
 
-// MulByNonResidue1Power5 returns x*(9+u)^(5*(p^1-1)/6)
+// MulByNonResidue1Power5 returns x*(1+u)^(5*(p^1-1)/6)
 func (e Ext2) MulByNonResidue1Power5(x *E2) *E2 {
 	return e.MulByNonResidueGeneric(x, 1, 5)
 }
 
-// MulByNonResidue2Power1 returns x*(9+u)^(1*(p^2-1)/6)
+// MulByNonResidue2Power1 returns x*(1+u)^(1*(p^2-1)/6)
 func (e Ext2) MulByNonResidue2Power1(x *E2) *E2 {
-	element := emulated.ValueOf[emulated.BN254Fp]("21888242871839275220042445260109153167277707414472061641714758635765020556617")
+	element := emulated.ValueOf[emulated.BLS12381Fp]("793479390729215512621379701633421447060886740281060493010456487427281649075476305620758731620351")
 	return &E2{
 		A0: *e.fp.MulMod(&x.A0, &element),
 		A1: *e.fp.MulMod(&x.A1, &element),
 	}
 }
 
-// MulByNonResidue2Power2 returns x*(9+u)^(2*(p^2-1)/6)
+// MulByNonResidue2Power2 returns x*(1+u)^(2*(p^2-1)/6)
 func (e Ext2) MulByNonResidue2Power2(x *E2) *E2 {
-	element := emulated.ValueOf[emulated.BN254Fp]("21888242871839275220042445260109153167277707414472061641714758635765020556616")
+	element := emulated.ValueOf[emulated.BLS12381Fp]("793479390729215512621379701633421447060886740281060493010456487427281649075476305620758731620350")
 	return &E2{
 		A0: *e.fp.MulMod(&x.A0, &element),
 		A1: *e.fp.MulMod(&x.A1, &element),
 	}
 }
 
-// MulByNonResidue2Power3 returns x*(9+u)^(3*(p^2-1)/6)
+// MulByNonResidue2Power3 returns x*(1+u)^(3*(p^2-1)/6)
 func (e Ext2) MulByNonResidue2Power3(x *E2) *E2 {
-	element := emulated.ValueOf[emulated.BN254Fp]("21888242871839275222246405745257275088696311157297823662689037894645226208582")
+	element := emulated.ValueOf[emulated.BLS12381Fp]("4002409555221667393417789825735904156556882819939007885332058136124031650490837864442687629129015664037894272559786")
 	return &E2{
 		A0: *e.fp.MulMod(&x.A0, &element),
 		A1: *e.fp.MulMod(&x.A1, &element),
 	}
 }
 
-// MulByNonResidue2Power4 returns x*(9+u)^(4*(p^2-1)/6)
+// MulByNonResidue2Power4 returns x*(1+u)^(4*(p^2-1)/6)
 func (e Ext2) MulByNonResidue2Power4(x *E2) *E2 {
-	element := emulated.ValueOf[emulated.BN254Fp]("2203960485148121921418603742825762020974279258880205651966")
+	element := emulated.ValueOf[emulated.BLS12381Fp]("4002409555221667392624310435006688643935503118305586438271171395842971157480381377015405980053539358417135540939436")
 	return &E2{
 		A0: *e.fp.MulMod(&x.A0, &element),
 		A1: *e.fp.MulMod(&x.A1, &element),
 	}
 }
 
-// MulByNonResidue2Power5 returns x*(9+u)^(5*(p^2-1)/6)
+// MulByNonResidue2Power5 returns x*(1+u)^(5*(p^2-1)/6)
 func (e Ext2) MulByNonResidue2Power5(x *E2) *E2 {
-	element := emulated.ValueOf[emulated.BN254Fp]("2203960485148121921418603742825762020974279258880205651967")
+	element := emulated.ValueOf[emulated.BLS12381Fp]("4002409555221667392624310435006688643935503118305586438271171395842971157480381377015405980053539358417135540939437")
 	return &E2{
 		A0: *e.fp.MulMod(&x.A0, &element),
 		A1: *e.fp.MulMod(&x.A1, &element),
 	}
-}
-
-// MulByNonResidue3Power1 returns x*(9+u)^(1*(p^3-1)/6)
-func (e Ext2) MulByNonResidue3Power1(x *E2) *E2 {
-	return e.MulByNonResidueGeneric(x, 3, 1)
-}
-
-// MulByNonResidue3Power2 returns x*(9+u)^(2*(p^3-1)/6)
-func (e Ext2) MulByNonResidue3Power2(x *E2) *E2 {
-	return e.MulByNonResidueGeneric(x, 3, 2)
-}
-
-// MulByNonResidue3Power3 returns x*(9+u)^(3*(p^3-1)/6)
-func (e Ext2) MulByNonResidue3Power3(x *E2) *E2 {
-	return e.MulByNonResidueGeneric(x, 3, 3)
-}
-
-// MulByNonResidue3Power4 returns x*(9+u)^(4*(p^3-1)/6)
-func (e Ext2) MulByNonResidue3Power4(x *E2) *E2 {
-	return e.MulByNonResidueGeneric(x, 3, 4)
-}
-
-// MulByNonResidue3Power5 returns x*(9+u)^(5*(p^3-1)/6)
-func (e Ext2) MulByNonResidue3Power5(x *E2) *E2 {
-	return e.MulByNonResidueGeneric(x, 3, 5)
 }
 
 func (e Ext2) Mul(x, y *E2) *E2 {
@@ -258,11 +242,19 @@ func (e Ext2) Zero() *E2 {
 		A1: *z1,
 	}
 }
-
 func (e Ext2) IsZero(z *E2) frontend.Variable {
 	a0 := e.fp.IsZero(&z.A0)
 	a1 := e.fp.IsZero(&z.A1)
 	return e.api.And(a0, a1)
+}
+
+// returns 1+u
+func (e Ext2) NonResidue() *E2 {
+	one := e.fp.One()
+	return &E2{
+		A0: *one,
+		A1: *one,
+	}
 }
 
 func (e Ext2) Square(x *E2) *E2 {
@@ -292,10 +284,10 @@ func (e Ext2) AssertIsEqual(x, y *E2) {
 	e.fp.AssertIsEqual(&x.A1, &y.A1)
 }
 
-func FromE2(y *bn254.E2) E2 {
+func FromE2(y *bls12381.E2) E2 {
 	return E2{
-		A0: emulated.ValueOf[emulated.BN254Fp](y.A0),
-		A1: emulated.ValueOf[emulated.BN254Fp](y.A1),
+		A0: emulated.ValueOf[emulated.BLS12381Fp](y.A0),
+		A1: emulated.ValueOf[emulated.BLS12381Fp](y.A1),
 	}
 }
 
@@ -505,6 +497,32 @@ func (e Ext6) MulByE2(x *E6, y *E2) *E6 {
 	}
 }
 
+// MulBy12 multiplication by sparse element (0,b1,b2)
+func (e Ext6) MulBy12(x *E6, b1, b2 *E2) *E6 {
+	t1 := e.Ext2.Mul(&x.B1, b1)
+	t2 := e.Ext2.Mul(&x.B2, b2)
+	c0 := e.Ext2.Add(&x.B1, &x.B2)
+	tmp := e.Ext2.Add(b1, b2)
+	c0 = e.Ext2.Mul(c0, tmp)
+	c0 = e.Ext2.Sub(c0, t1)
+	c0 = e.Ext2.Sub(c0, t2)
+	c0 = e.Ext2.MulByNonResidue(c0)
+	c1 := e.Ext2.Add(&x.B0, &x.B1)
+	c1 = e.Ext2.Mul(c1, b1)
+	c1 = e.Ext2.Sub(c1, t1)
+	tmp = e.Ext2.MulByNonResidue(t2)
+	c1 = e.Ext2.Add(c1, tmp)
+	tmp = e.Ext2.Add(&x.B0, &x.B2)
+	c2 := e.Ext2.Mul(b2, tmp)
+	c2 = e.Ext2.Sub(c2, t2)
+	c2 = e.Ext2.Add(c2, t1)
+	return &E6{
+		B0: *c0,
+		B1: *c1,
+		B2: *c2,
+	}
+}
+
 // MulBy0 multiplies z by an E6 sparse element of the form
 //
 //	E6{
@@ -527,13 +545,7 @@ func (e Ext6) MulBy0(z *E6, c0 *E2) *E6 {
 	}
 }
 
-// MulBy01 multiplies z by an E6 sparse element of the form
-//
-//	E6{
-//		B0: c0,
-//		B1: c1,
-//		B2: 0,
-//	}
+// MulBy01 multiplication by sparse element (c0,c1,0)
 func (e Ext6) MulBy01(z *E6, c0, c1 *E2) *E6 {
 	a := e.Ext2.Mul(&z.B0, c0)
 	b := e.Ext2.Mul(&z.B1, c1)
@@ -558,43 +570,6 @@ func (e Ext6) MulBy01(z *E6, c0, c1 *E2) *E6 {
 	}
 }
 
-// Mul01By01 multiplies two E6 sparse element of the form:
-//
-//	E6{
-//		B0: c0,
-//		B1: c1,
-//		B2: 0,
-//	}
-//
-// and
-//
-//	E6{
-//		B0: d0,
-//		B1: d1,
-//		B2: 0,
-//	}
-func (e Ext6) Mul01By01(c0, c1, d0, d1 *E2) *E6 {
-	a := e.Ext2.Mul(d0, c0)
-	b := e.Ext2.Mul(d1, c1)
-	t0 := e.Ext2.Mul(c1, d1)
-	t0 = e.Ext2.Sub(t0, b)
-	t0 = e.Ext2.MulByNonResidue(t0)
-	t0 = e.Ext2.Add(t0, a)
-	t2 := e.Ext2.Mul(c0, d0)
-	t2 = e.Ext2.Sub(t2, a)
-	t2 = e.Ext2.Add(t2, b)
-	t1 := e.Ext2.Add(c0, c1)
-	tmp := e.Ext2.Add(d0, d1)
-	t1 = e.Ext2.Mul(t1, tmp)
-	t1 = e.Ext2.Sub(t1, a)
-	t1 = e.Ext2.Sub(t1, b)
-	return &E6{
-		B0: *t0,
-		B1: *t1,
-		B2: *t2,
-	}
-}
-
 func (e Ext6) MulByNonResidue(x *E6) *E6 {
 	z2, z1, z0 := &x.B1, &x.B0, &x.B2
 	z0 = e.Ext2.MulByNonResidue(z0)
@@ -605,19 +580,13 @@ func (e Ext6) MulByNonResidue(x *E6) *E6 {
 	}
 }
 
-func (e Ext6) FrobeniusSquare(x *E6) *E6 {
-	z01 := e.Ext2.MulByNonResidue2Power2(&x.B1)
-	z02 := e.Ext2.MulByNonResidue2Power4(&x.B2)
-	return &E6{B0: x.B0, B1: *z01, B2: *z02}
-}
-
 func (e Ext6) AssertIsEqual(x, y *E6) {
 	e.Ext2.AssertIsEqual(&x.B0, &y.B0)
 	e.Ext2.AssertIsEqual(&x.B1, &y.B1)
 	e.Ext2.AssertIsEqual(&x.B2, &y.B2)
 }
 
-func FromE6(y *bn254.E6) E6 {
+func FromE6(y *bls12381.E6) E6 {
 	return E6{
 		B0: FromE2(&y.B0),
 		B1: FromE2(&y.B1),
@@ -798,7 +767,7 @@ func (e Ext12) AssertIsEqual(x, y *E12) {
 	e.Ext6.AssertIsEqual(&x.C1, &y.C1)
 }
 
-func FromE12(y *bn254.E12) E12 {
+func FromE12(y *bls12381.E12) E12 {
 	return E12{
 		C0: FromE6(&y.C0),
 		C1: FromE6(&y.C1),
@@ -883,82 +852,93 @@ func (e Ext12) nSquareTorus(z *E6, n int) *E6 {
 	return z
 }
 
-// Exponentiation by the seed t=4965661367192848881
-// The computations are performed on E6 compressed form using Torus-based arithmetic.
-func (e Ext12) ExptTorus(x *E6) *E6 {
-	// Expt computation is derived from the addition chain:
+// ExptHalfTorus set z to x^(t/2) in E6 and return z
+// const t/2 uint64 = 7566188111470821376 // negative
+func (e Ext12) ExptHalfTorus(x *E6) *E6 {
+	// FixedExp computation is derived from the addition chain:
 	//
-	//	_10     = 2*1
-	//	_100    = 2*_10
-	//	_1000   = 2*_100
-	//	_10000  = 2*_1000
-	//	_10001  = 1 + _10000
-	//	_10011  = _10 + _10001
-	//	_10100  = 1 + _10011
-	//	_11001  = _1000 + _10001
-	//	_100010 = 2*_10001
-	//	_100111 = _10011 + _10100
-	//	_101001 = _10 + _100111
-	//	i27     = (_100010 << 6 + _100 + _11001) << 7 + _11001
-	//	i44     = (i27 << 8 + _101001 + _10) << 6 + _10001
-	//	i70     = ((i44 << 8 + _101001) << 6 + _101001) << 10
-	//	return    (_100111 + i70) << 6 + _101001 + _1000
+	//	_10      = 2*1
+	//	_11      = 1 + _10
+	//	_1100    = _11 << 2
+	//	_1101    = 1 + _1100
+	//	_1101000 = _1101 << 3
+	//	_1101001 = 1 + _1101000
+	//	return     ((_1101001 << 9 + 1) << 32 + 1) << 15
 	//
-	// Operations: 62 squares 17 multiplies
+	// Operations: 62 squares 5 multiplies
 	//
 	// Generated by github.com/mmcloughlin/addchain v0.4.0.
 
-	t3 := e.SquareTorus(x)
-	t5 := e.SquareTorus(t3)
-	result := e.SquareTorus(t5)
-	t0 := e.SquareTorus(result)
-	t2 := e.MulTorus(x, t0)
-	t0 = e.MulTorus(t3, t2)
-	t1 := e.MulTorus(x, t0)
-	t4 := e.MulTorus(result, t2)
-	t6 := e.SquareTorus(t2)
-	t1 = e.MulTorus(t0, t1)
-	t0 = e.MulTorus(t3, t1)
-	t6 = e.nSquareTorus(t6, 6)
-	t5 = e.MulTorus(t5, t6)
-	t5 = e.MulTorus(t4, t5)
-	t5 = e.nSquareTorus(t5, 7)
-	t4 = e.MulTorus(t4, t5)
-	t4 = e.nSquareTorus(t4, 8)
-	t4 = e.MulTorus(t0, t4)
-	t3 = e.MulTorus(t3, t4)
-	t3 = e.nSquareTorus(t3, 6)
-	t2 = e.MulTorus(t2, t3)
-	t2 = e.nSquareTorus(t2, 8)
-	t2 = e.MulTorus(t0, t2)
-	t2 = e.nSquareTorus(t2, 6)
-	t2 = e.MulTorus(t0, t2)
-	t2 = e.nSquareTorus(t2, 10)
-	t1 = e.MulTorus(t1, t2)
-	t1 = e.nSquareTorus(t1, 6)
-	t0 = e.MulTorus(t0, t1)
-	z := e.MulTorus(result, t0)
+	// Step 1: z = x^0x2
+	z := e.SquareTorus(x)
+
+	// Step 2: z = x^0x3
+	z = e.MulTorus(x, z)
+
+	z = e.SquareTorus(z)
+	z = e.SquareTorus(z)
+
+	// Step 5: z = x^0xd
+	z = e.MulTorus(x, z)
+
+	// Step 8: z = x^0x68
+	z = e.nSquareTorus(z, 3)
+
+	// Step 9: z = x^0x69
+	z = e.MulTorus(x, z)
+
+	// Step 18: z = x^0xd200
+	z = e.nSquareTorus(z, 9)
+
+	// Step 19: z = x^0xd201
+	z = e.MulTorus(x, z)
+
+	// Step 51: z = x^0xd20100000000
+	z = e.nSquareTorus(z, 32)
+
+	// Step 52: z = x^0xd20100000001
+	z = e.MulTorus(x, z)
+
+	// Step 67: z = x^0x6900800000008000
+	z = e.nSquareTorus(z, 15)
+
+	z = e.InverseTorus(z) // because tAbsVal is negative
+
 	return z
 }
 
-// MulBy034 multiplies z by an E12 sparse element of the form
+// ExptTorus set z to xᵗ in E6 and return z
+// const t uint64 = 15132376222941642752 // negative
+func (e Ext12) ExptTorus(x *E6) *E6 {
+	z := e.ExptHalfTorus(x)
+	z = e.SquareTorus(z)
+	return z
+}
+
+// MulBy014 multiplies z by an E12 sparse element of the form
 //
 //	E12{
-//		C0: E6{B0: 1, B1: 0, B2: 0},
-//		C1: E6{B0: c3, B1: c4, B2: 0},
+//		C0: E6{B0: c0, B1: c1, B2: 0},
+//		C1: E6{B0: 0, B1: 1, B2: 0},
 //	}
-func (e *Ext12) MulBy034(z *E12, c3, c4 *E2) *E12 {
+func (e *Ext12) MulBy014(z *E12, c0, c1 *E2) *E12 {
 
 	a := z.C0
-	b := z.C1
-	b = *e.MulBy01(&b, c3, c4)
-	c3 = e.Ext2.Add(e.Ext2.One(), c3)
-	d := e.Ext6.Add(&z.C0, &z.C1)
-	d = e.MulBy01(d, c3, c4)
+	a = *e.MulBy01(&a, c0, c1)
 
-	zC1 := e.Ext6.Add(&a, &b)
-	zC1 = e.Ext6.Neg(zC1)
-	zC1 = e.Ext6.Add(zC1, d)
+	var b E6
+	// Mul by E6{0, 1, 0}
+	b.B0 = *e.Ext2.MulByNonResidue(&z.C1.B2)
+	b.B2 = z.C1.B1
+	b.B1 = z.C1.B0
+
+	one := e.Ext2.One()
+	d := e.Ext2.Add(c1, one)
+
+	zC1 := e.Ext6.Add(&z.C1, &z.C0)
+	zC1 = e.Ext6.MulBy01(zC1, c0, d)
+	zC1 = e.Ext6.Sub(zC1, &a)
+	zC1 = e.Ext6.Sub(zC1, &b)
 	zC0 := e.Ext6.MulByNonResidue(&b)
 	zC0 = e.Ext6.Add(zC0, &a)
 
@@ -971,85 +951,60 @@ func (e *Ext12) MulBy034(z *E12, c3, c4 *E2) *E12 {
 //	multiplies two E12 sparse element of the form:
 //
 //	E12{
-//		C0: E6{B0: 1, B1: 0, B2: 0},
-//		C1: E6{B0: c3, B1: c4, B2: 0},
+//		C0: E6{B0: c0, B1: c1, B2: 0},
+//		C1: E6{B0: 0, B1: 1, B2: 0},
 //	}
 //
 // and
 //
 //	E12{
-//		C0: E6{B0: 1, B1: 0, B2: 0},
-//		C1: E6{B0: d3, B1: d4, B2: 0},
+//		C0: E6{B0: d0, B1: d1, B2: 0},
+//		C1: E6{B0: 0, B1: 1, B2: 0},
 //	}
-func (e *Ext12) Mul034By034(d3, d4, c3, c4 *E2) *[5]E2 {
-	x3 := e.Ext2.Mul(c3, d3)
-	x4 := e.Ext2.Mul(c4, d4)
-	x04 := e.Ext2.Add(c4, d4)
-	x03 := e.Ext2.Add(c3, d3)
-	tmp := e.Ext2.Add(c3, c4)
-	x34 := e.Ext2.Add(d3, d4)
-	x34 = e.Ext2.Mul(x34, tmp)
-	x34 = e.Ext2.Sub(x34, x3)
-	x34 = e.Ext2.Sub(x34, x4)
+func (e Ext12) Mul014By014(d0, d1, c0, c1 *E2) *[5]E2 {
+	one := e.Ext2.One()
+	x0 := e.Ext2.Mul(c0, d0)
+	x1 := e.Ext2.Mul(c1, d1)
+	tmp := e.Ext2.Add(c0, one)
+	x04 := e.Ext2.Add(d0, one)
+	x04 = e.Ext2.Mul(x04, tmp)
+	x04 = e.Ext2.Sub(x04, x0)
+	x04 = e.Ext2.Sub(x04, one)
+	tmp = e.Ext2.Add(c0, c1)
+	x01 := e.Ext2.Add(d0, d1)
+	x01 = e.Ext2.Mul(x01, tmp)
+	x01 = e.Ext2.Sub(x01, x0)
+	x01 = e.Ext2.Sub(x01, x1)
+	tmp = e.Ext2.Add(c1, one)
+	x14 := e.Ext2.Add(d1, one)
+	x14 = e.Ext2.Mul(x14, tmp)
+	x14 = e.Ext2.Sub(x14, x1)
+	x14 = e.Ext2.Sub(x14, one)
 
-	zC0B0 := e.Ext2.MulByNonResidue(x4)
-	zC0B0 = e.Ext2.Add(zC0B0, e.Ext2.One())
-	zC0B1 := x3
-	zC0B2 := x34
-	zC1B0 := x03
-	zC1B1 := x04
+	zC0B0 := e.Ext2.NonResidue()
+	zC0B0 = e.Ext2.Add(zC0B0, x0)
 
-	return &[5]E2{*zC0B0, *zC0B1, *zC0B2, *zC1B0, *zC1B1}
+	return &[5]E2{*zC0B0, *x01, *x1, *x04, *x14}
 }
 
-// MulBy01234 multiplies z by an E12 sparse element of the form
+// MulBy01245 multiplies z by an E12 sparse element of the form
 //
 //	E12{
 //		C0: E6{B0: c0, B1: c1, B2: c2},
-//		C1: E6{B0: c3, B1: c4, B2: 0},
+//		C1: E6{B0: 0, B1: c4, B2: c5},
 //	}
-func (e *Ext12) MulBy01234(z *E12, x *[5]E2) *E12 {
+func (e *Ext12) MulBy01245(z *E12, x *[5]E2) *E12 {
 	c0 := &E6{B0: x[0], B1: x[1], B2: x[2]}
-	c1 := &E6{B0: x[3], B1: x[4], B2: *e.Ext2.Zero()}
+	c1 := &E6{B0: *e.Ext2.Zero(), B1: x[3], B2: x[4]}
 	a := e.Ext6.Add(&z.C0, &z.C1)
 	b := e.Ext6.Add(c0, c1)
 	a = e.Ext6.Mul(a, b)
 	b = e.Ext6.Mul(&z.C0, c0)
-	c := e.Ext6.MulBy01(&z.C1, &x[3], &x[4])
+	c := e.Ext6.MulBy12(&z.C1, &x[3], &x[4])
 	z1 := e.Ext6.Sub(a, b)
 	z1 = e.Ext6.Sub(z1, c)
 	z0 := e.Ext6.MulByNonResidue(c)
 	z0 = e.Ext6.Add(z0, b)
-	return &E12{
-		C0: *z0,
-		C1: *z1,
-	}
-}
-
-//	multiplies two E12 sparse element of the form:
-//
-//	E12{
-//		C0: E6{B0: x0, B1: x1, B2: x2},
-//		C1: E6{B0: x3, B1: x4, B2: 0},
-//	}
-//
-// and
-//
-//	E12{
-//		C0: E6{B0: 1, B1: 0, B2: 0},
-//		C1: E6{B0: z3, B1: z4, B2: 0},
-//	}
-func (e *Ext12) Mul01234By034(x *[5]E2, z3, z4 *E2) *E12 {
-	c0 := &E6{B0: x[0], B1: x[1], B2: x[2]}
-	c1 := &E6{B0: x[3], B1: x[4], B2: *e.Ext2.Zero()}
-	a := e.Ext6.Add(e.Ext6.One(), &E6{B0: *z3, B1: *z4, B2: *e.Ext2.Zero()})
-	b := e.Ext6.Add(c0, c1)
-	a = e.Ext6.Mul(a, b)
-	c := e.Ext6.Mul01By01(z3, z4, &x[3], &x[4])
-	z1 := e.Ext6.Sub(a, c0)
-	z1 = e.Ext6.Sub(z1, c)
-	z0 := e.Ext6.MulByNonResidue(c)
-	z0 = e.Ext6.Add(z0, c0)
 	return &E12{
 		C0: *z0,
 		C1: *z1,
@@ -1068,7 +1023,7 @@ func (e *Ext12) Mul01234By034(x *[5]E2, z3, z4 *E2) *E12 {
 // We recall the tower construction:
 //
 //	𝔽p²[u] = 𝔽p/u²+1
-//	𝔽p⁶[v] = 𝔽p²/v³-9-u
+//	𝔽p⁶[v] = 𝔽p²/v³-1-u
 //	𝔽p¹²[w] = 𝔽p⁶/w²-v
 
 // CompressTorus compresses x ∈ E12 to (x.C0 + 1)/x.C1 ∈ E6
@@ -1147,7 +1102,7 @@ func (e Ext12) FrobeniusTorus(y *E6) *E6 {
 	t1 = e.Ext2.MulByNonResidue1Power2(t1)
 	t2 = e.Ext2.MulByNonResidue1Power4(t2)
 
-	v0 := E2{emulated.ValueOf[emulated.BN254Fp]("18566938241244942414004596690298913868373833782006617400804628704885040364344"), emulated.ValueOf[emulated.BN254Fp]("5722266937896532885780051958958348231143373700109372999374820235121374419868")}
+	v0 := E2{emulated.ValueOf[emulated.BLS12381Fp]("877076961050607968509681729531255177986764537961432449499635504522207616027455086505066378536590128544573588734230"), emulated.ValueOf[emulated.BLS12381Fp]("877076961050607968509681729531255177986764537961432449499635504522207616027455086505066378536590128544573588734230")}
 	res := &E6{B0: *t0, B1: *t1, B2: *t2}
 	res = e.Ext6.MulBy0(res, &v0)
 
@@ -1157,7 +1112,7 @@ func (e Ext12) FrobeniusTorus(y *E6) *E6 {
 // FrobeniusSquareTorus raises a compressed elements y ∈ E6 to the square modulus p^2
 // and returns y^(p^2) / v^((p^2-1)/2)
 func (e Ext12) FrobeniusSquareTorus(y *E6) *E6 {
-	v0 := emulated.ValueOf[emulated.BN254Fp]("2203960485148121921418603742825762020974279258880205651967")
+	v0 := emulated.ValueOf[emulated.BLS12381Fp]("4002409555221667392624310435006688643935503118305586438271171395842971157480381377015405980053539358417135540939437")
 	t0 := e.Ext2.MulByElement(&y.B0, &v0)
 	t1 := e.Ext2.MulByNonResidue2Power2(&y.B1)
 	t1 = e.Ext2.MulByElement(t1, &v0)
@@ -1165,20 +1120,4 @@ func (e Ext12) FrobeniusSquareTorus(y *E6) *E6 {
 	t2 = e.Ext2.MulByElement(t2, &v0)
 
 	return &E6{B0: *t0, B1: *t1, B2: *t2}
-}
-
-// FrobeniusCubeTorus raises a compressed elements y ∈ E6 to the cube modulus p^3
-// and returns y^(p^3) / v^((p^3-1)/2)
-func (e Ext12) FrobeniusCubeTorus(y *E6) *E6 {
-	t0 := e.Ext2.Conjugate(&y.B0)
-	t1 := e.Ext2.Conjugate(&y.B1)
-	t2 := e.Ext2.Conjugate(&y.B2)
-	t1 = e.Ext2.MulByNonResidue3Power2(t1)
-	t2 = e.Ext2.MulByNonResidue3Power4(t2)
-
-	v0 := E2{emulated.ValueOf[emulated.BN254Fp]("10190819375481120917420622822672549775783927716138318623895010788866272024264"), emulated.ValueOf[emulated.BN254Fp]("303847389135065887422783454877609941456349188919719272345083954437860409601")}
-	res := &E6{B0: *t0, B1: *t1, B2: *t2}
-	res = e.Ext6.MulBy0(res, &v0)
-
-	return res
 }
