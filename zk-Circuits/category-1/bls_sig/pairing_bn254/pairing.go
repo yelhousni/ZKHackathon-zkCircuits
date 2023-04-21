@@ -604,3 +604,62 @@ func (pr Pairing) lineCompute(p1, p2 *G2Affine) *lineEvaluation {
 	return &line
 
 }
+
+// ----
+// Fixed argument pairing
+
+func (pr Pairing) MillerLoopFixedQ(P *G1Affine, Q *G2Affine) (*GTEl, error) {
+
+	yInv := pr.curveF.Inverse(&P.Y)
+	xOverY := pr.curveF.MulMod(&P.X, yInv)
+	res := pr.Ext12.One()
+	for i := 64; i >= 0; i-- {
+		res = pr.Square(res)
+
+		// ℓ × res
+		res = pr.MulBy034(res,
+			pr.MulByElement(&PrecomputedLines[0][i], xOverY),
+			pr.MulByElement(&PrecomputedLines[1][i], yInv),
+		)
+
+		if loopCounter[i] == 1 {
+
+			// ℓ × res
+			res = pr.MulBy034(res,
+				pr.MulByElement(&PrecomputedLines[2][i], xOverY),
+				pr.MulByElement(&PrecomputedLines[3][i], yInv),
+			)
+
+		} else if loopCounter[i] == -1 {
+
+			// ℓ × res
+			res = pr.MulBy034(res,
+				pr.MulByElement(&PrecomputedLines[2][i], xOverY),
+				pr.MulByElement(&PrecomputedLines[3][i], yInv),
+			)
+		}
+	}
+
+	// line evaluation at P
+	res = pr.MulBy034(res,
+		pr.MulByElement(&PrecomputedLines[0][65], xOverY),
+		pr.MulByElement(&PrecomputedLines[1][65], yInv),
+	)
+
+	// line evaluation at P
+	res = pr.MulBy034(res,
+		pr.MulByElement(&PrecomputedLines[0][66], xOverY),
+		pr.MulByElement(&PrecomputedLines[1][66], yInv),
+	)
+
+	return res, nil
+}
+
+func (pr Pairing) PairFixedQ(P *G1Affine, Q *G2Affine) (*GTEl, error) {
+	res, err := pr.MillerLoopFixedQ(P, Q)
+	if err != nil {
+		return nil, fmt.Errorf("miller loop: %w", err)
+	}
+	res = pr.finalExponentiation(res, true)
+	return res, nil
+}

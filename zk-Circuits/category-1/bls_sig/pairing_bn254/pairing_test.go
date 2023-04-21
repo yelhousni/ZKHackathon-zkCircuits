@@ -8,6 +8,8 @@ import (
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark-crypto/ecc/bn254"
 	"github.com/consensys/gnark/frontend"
+	"github.com/consensys/gnark/frontend/cs/r1cs"
+	"github.com/consensys/gnark/profile"
 	"github.com/consensys/gnark/test"
 )
 
@@ -195,4 +197,59 @@ func TestFinalExponentiationSafeCircuit(t *testing.T) {
 		Q2: NewG2Affine(q2),
 	}, ecc.BN254.ScalarField())
 	assert.NoError(err)
+}
+
+// ---
+// Fixed-argument pairing
+
+type PairFixedCircuit struct {
+	InG1 G1Affine
+	InG2 G2Affine
+	Res  GTEl
+}
+
+func (c *PairFixedCircuit) Define(api frontend.API) error {
+	pairing, err := NewPairing(api)
+	if err != nil {
+		return fmt.Errorf("new pairing: %w", err)
+	}
+	res, err := pairing.PairFixedQ(&c.InG1, &c.InG2)
+	if err != nil {
+		return fmt.Errorf("pair: %w", err)
+	}
+	pairing.AssertIsEqual(res, &c.Res)
+	return nil
+}
+
+func TestPairFixedTestSolve(t *testing.T) {
+	assert := test.NewAssert(t)
+	p, _ := randomG1G2Affines(assert)
+	_, _, _, G2AffGen := bn254.Generators()
+	res, err := bn254.Pair([]bn254.G1Affine{p}, []bn254.G2Affine{G2AffGen})
+	assert.NoError(err)
+	witness := PairFixedCircuit{
+		InG1: NewG1Affine(p),
+		InG2: NewG2Affine(G2AffGen),
+		Res:  NewGTEl(res),
+	}
+	err = test.IsSolved(&PairFixedCircuit{}, &witness, ecc.BN254.ScalarField())
+	assert.NoError(err)
+}
+
+// bench
+func BenchmarkPairing(b *testing.B) {
+	var c PairCircuit
+	p := profile.Start()
+	_, _ = frontend.Compile(ecc.BN254.ScalarField(), r1cs.NewBuilder, &c)
+	p.Stop()
+	fmt.Println("⏱️ Single BN254 pairing in a BN254 R1CS circuit: ", p.NbConstraints())
+}
+
+// bench
+func BenchmarkPairingFixedQ(b *testing.B) {
+	var c PairFixedCircuit
+	p := profile.Start()
+	_, _ = frontend.Compile(ecc.BN254.ScalarField(), r1cs.NewBuilder, &c)
+	p.Stop()
+	fmt.Println("⏱️ Single BN254 pairing (fixed G2 argument) in a BN254 R1CS circuit: ", p.NbConstraints())
 }
