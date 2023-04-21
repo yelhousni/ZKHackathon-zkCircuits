@@ -8,6 +8,8 @@ import (
 	"github.com/consensys/gnark-crypto/ecc"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	"github.com/consensys/gnark/frontend"
+	"github.com/consensys/gnark/frontend/cs/r1cs"
+	"github.com/consensys/gnark/profile"
 	"github.com/consensys/gnark/test"
 )
 
@@ -195,4 +197,13 @@ func TestFinalExponentiationSafeCircuit(t *testing.T) {
 		Q2: NewG2Affine(q2),
 	}, ecc.BN254.ScalarField())
 	assert.NoError(err)
+}
+
+// bench
+func BenchmarkPairing(b *testing.B) {
+	var c PairCircuit
+	p := profile.Start()
+	_, _ = frontend.Compile(ecc.BN254.ScalarField(), r1cs.NewBuilder, &c)
+	p.Stop()
+	fmt.Println("⏱️ Single BLS12-381 pairing in a BN254 R1CS circuit: ", p.NbConstraints())
 }

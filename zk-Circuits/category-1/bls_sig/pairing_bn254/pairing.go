@@ -607,6 +607,7 @@ func (pr Pairing) lineCompute(p1, p2 *G2Affine) *lineEvaluation {
 
 // ----
 // Fixed argument pairing
+// TODO: DoublePairing where one of the point is fixed (special case of multi-pair)
 
 func (pr Pairing) MillerLoopFixedQ(P *G1Affine, Q *G2Affine) (*GTEl, error) {
 
@@ -623,6 +624,7 @@ func (pr Pairing) MillerLoopFixedQ(P *G1Affine, Q *G2Affine) (*GTEl, error) {
 		)
 
 		if loopCounter[i] == 1 {
+			// TODO: store multiples of lines 2-by-2
 
 			// ℓ × res
 			res = pr.MulBy034(res,
