@@ -1,7 +1,6 @@
 package pairing_bn254
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254"
@@ -1182,11 +1181,4 @@ func (e Ext12) FrobeniusCubeTorus(y *E6) *E6 {
 	res = e.Ext6.MulBy0(res, &v0)
 
 	return res
-}
-
-// debug
-func (e Ext2) String(x *E2) string {
-	x0 := e.fp.String(&x.A0)
-	x1 := e.fp.String(&x.A1)
-	return fmt.Sprintf("%s+%s*u", x0, x1)
 }
