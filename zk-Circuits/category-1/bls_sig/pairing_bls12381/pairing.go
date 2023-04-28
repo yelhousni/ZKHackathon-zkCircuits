@@ -550,3 +550,72 @@ func (pr Pairing) tangentCompute(p1 *G2Affine) *lineEvaluation {
 	return &line
 
 }
+
+// ----
+// Fixed argument pairing
+// TODO: DoublePairing where one of the point is fixed (special case of multi-pair)
+
+func (pr Pairing) MillerLoopFixedQ(P *G1Affine, Q *G2Affine) (*GTEl, error) {
+
+	res := pr.Ext12.One()
+
+	var yInv, xOverY *emulated.Element[emulated.BLS12381Fp]
+
+	// P and Q are supposed to be on G1 and G2 respectively of prime order r.
+	// The point (x,0) is of order 2. But this function does not check
+	// subgroup membership.
+	// Anyway (x,0) cannot be on BLS12-381 because -4 is a cubic non-residue in Fp.
+	// so, 1/y is well defined for all points P's
+	yInv = pr.curveF.Inverse(&P.Y)
+	xOverY = pr.curveF.MulMod(&P.X, yInv)
+
+	// Compute ∏ᵢ { fᵢ_{x₀,Q}(P) }
+
+	// i = 62, separately to avoid an E12 Square
+	// (Square(res) = 1² = 1)
+	res = pr.MulBy014(res,
+		pr.MulByElement(&PrecomputedLines[1][62], yInv),
+		pr.MulByElement(&PrecomputedLines[0][62], xOverY),
+	)
+	res = pr.MulBy014(res,
+		pr.MulByElement(&PrecomputedLines[3][62], yInv),
+		pr.MulByElement(&PrecomputedLines[2][62], xOverY),
+	)
+
+	// Compute ∏ᵢ { fᵢ_{u,Q}(P) }
+	for i := 61; i >= 0; i-- {
+		// mutualize the square among n Miller loops
+		// (∏ᵢfᵢ)²
+		res = pr.Square(res)
+
+		if loopCounter[i] == 0 {
+			res = pr.MulBy014(res,
+				pr.MulByElement(&PrecomputedLines[1][i], yInv),
+				pr.MulByElement(&PrecomputedLines[0][i], xOverY),
+			)
+		} else {
+			res = pr.MulBy014(res,
+				pr.MulByElement(&PrecomputedLines[1][i], yInv),
+				pr.MulByElement(&PrecomputedLines[0][i], xOverY),
+			)
+			res = pr.MulBy014(res,
+				pr.MulByElement(&PrecomputedLines[3][i], yInv),
+				pr.MulByElement(&PrecomputedLines[2][i], xOverY),
+			)
+		}
+	}
+
+	// negative x₀
+	res = pr.Ext12.Conjugate(res)
+
+	return res, nil
+}
+
+func (pr Pairing) PairFixedQ(P *G1Affine, Q *G2Affine) (*GTEl, error) {
+	res, err := pr.MillerLoopFixedQ(P, Q)
+	if err != nil {
+		return nil, fmt.Errorf("miller loop: %w", err)
+	}
+	res = pr.finalExponentiation(res, true)
+	return res, nil
+}
