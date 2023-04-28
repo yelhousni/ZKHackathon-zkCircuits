@@ -204,7 +204,6 @@ func TestFinalExponentiationSafeCircuit(t *testing.T) {
 
 type PairFixedCircuit struct {
 	InG1 G1Affine
-	InG2 G2Affine
 	Res  GTEl
 }
 
@@ -213,7 +212,7 @@ func (c *PairFixedCircuit) Define(api frontend.API) error {
 	if err != nil {
 		return fmt.Errorf("new pairing: %w", err)
 	}
-	res, err := pairing.PairFixedQ(&c.InG1, &c.InG2)
+	res, err := pairing.PairFixedQ(&c.InG1)
 	if err != nil {
 		return fmt.Errorf("pair: %w", err)
 	}
@@ -229,10 +228,45 @@ func TestPairFixedTestSolve(t *testing.T) {
 	assert.NoError(err)
 	witness := PairFixedCircuit{
 		InG1: NewG1Affine(p),
-		InG2: NewG2Affine(G2AffGen),
 		Res:  NewGTEl(res),
 	}
 	err = test.IsSolved(&PairFixedCircuit{}, &witness, ecc.BN254.ScalarField())
+	assert.NoError(err)
+}
+
+type DoublePairFixedCircuit struct {
+	In1G1 G1Affine
+	In2G1 G1Affine
+	In1G2 G2Affine
+	Res   GTEl
+}
+
+func (c *DoublePairFixedCircuit) Define(api frontend.API) error {
+	pairing, err := NewPairing(api)
+	if err != nil {
+		return fmt.Errorf("new pairing: %w", err)
+	}
+	res, err := pairing.DoublePairFixedQ(&c.In1G1, &c.In2G1, &c.In1G2)
+	if err != nil {
+		return fmt.Errorf("pair: %w", err)
+	}
+	pairing.AssertIsEqual(res, &c.Res)
+	return nil
+}
+
+func TestDoublePairFixedTestSolve(t *testing.T) {
+	assert := test.NewAssert(t)
+	p, q := randomG1G2Affines(assert)
+	_, _, _, G2AffGen := bls12381.Generators()
+	res, err := bls12381.Pair([]bls12381.G1Affine{p, p}, []bls12381.G2Affine{q, G2AffGen})
+	assert.NoError(err)
+	witness := DoublePairFixedCircuit{
+		In1G1: NewG1Affine(p),
+		In2G1: NewG1Affine(p),
+		In1G2: NewG2Affine(q),
+		Res:   NewGTEl(res),
+	}
+	err = test.IsSolved(&DoublePairFixedCircuit{}, &witness, ecc.BN254.ScalarField())
 	assert.NoError(err)
 }
 

@@ -15,7 +15,8 @@ At the root repo, run: `go test -v ./... -run=NONE  -bench=./....`
 ⏱️  Single BN254 pairing in a BN254 R1CS circuit:  1393318
 ⏱️  Single BN254 pairing (fixed G2 argument) in a BN254 R1CS circuit:  1223891
 
-⏱️  BLS signature verifier on BLS12-381 in a BN254 R1CS circuit:  2682079
+⏱️  BLS signature verifier on BLS12-381 in a BN254 R1CS circuit (v1):  2682079
+⏱️  BLS signature verifier on BLS12-381 in a BN254 R1CS circuit (v2):  2456762
 ⏱️  BLS signature verifier on BN254 in a BN254 R1CS circuit (v1):  1875862
 ⏱️  BLS signature verifier on BN254 in a BN254 R1CS circuit (v2):  1874689
 
