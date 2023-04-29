@@ -6,8 +6,7 @@ This is the `sowa3dowa` team submission to the zkCircuits track for tasks 1.3, 1
 The submission is written in Go, and is based on gnark SNARK library.
 
 ## Video
-<img width="1440" alt="image" src="https://user-images.githubusercontent.com/16170090/235320848-b3087abc-9a93-4fcc-831f-834158ef7c00.png">
-https://youtu.be/2-hvcQNf69Q
+[<img width="1440" alt="image" src="https://user-images.githubusercontent.com/16170090/235320848-b3087abc-9a93-4fcc-831f-834158ef7c00.png">](https://youtu.be/2-hvcQNf69Q)
 
 ## Pre-requisites
 Install [Go 1.20](https://go.dev/doc/install) (latest version).
