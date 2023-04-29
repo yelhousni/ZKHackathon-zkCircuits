@@ -1,4 +1,6 @@
 # ZKHackathon-zkCircuits
+<img width="432" alt="Screenshot 2023-04-29 at 21 34 36" src="https://user-images.githubusercontent.com/16170090/235321077-c409674c-3f08-40bd-be8c-54e660bb1225.png">
+
 Thie reposisotry contains a submission to the [ZKP/Web3 Hackathon](https://zk-hacking.org/) hosted by Berkeley RDI.
 
 This is the `sowa3dowa` team submission to the zkCircuits track for tasks 1.3, 1.4 and 2.1. A descrption of this tasks can be found in this [document](https://drive.google.com/file/d/1iQ7Cl0OjeL_Rrwkn7zRGDjb6dp0O4QfG/view).
