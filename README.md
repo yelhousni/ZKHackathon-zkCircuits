@@ -1,4 +1,4 @@
-# ZKHackathon-zkCircuits
+# ZKHackathon: zkCircuits
 <img width="432" alt="Screenshot 2023-04-29 at 21 34 36" src="https://user-images.githubusercontent.com/16170090/235321077-c409674c-3f08-40bd-be8c-54e660bb1225.png">
 
 This repository contains a submission to the [ZKP/Web3 Hackathon](https://zk-hacking.org/) hosted by Berkeley RDI.
