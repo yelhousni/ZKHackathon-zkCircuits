@@ -3,9 +3,9 @@
 
 This repository contains a submission to the [ZKP/Web3 Hackathon](https://zk-hacking.org/) hosted by Berkeley RDI.
 
-This is the `sowa3dowa` team submission to the zkCircuits track for tasks 1.3, 1.4 and 2.1. A description of this tasks can be found in this [document](https://drive.google.com/file/d/1iQ7Cl0OjeL_Rrwkn7zRGDjb6dp0O4QfG/view).
+This is the `sowa3dowa` team submission to the zkCircuits track for tasks 1.3, 1.4 and 2.1. A description of these tasks can be found in this [document](https://drive.google.com/file/d/1iQ7Cl0OjeL_Rrwkn7zRGDjb6dp0O4QfG/view).
 
-The submission is written in Go, and is based on gnark SNARK library.
+The submission is written in Go, and is based on the gnark SNARK library.
 
 ## Video
 [<img width="1440" alt="image" src="https://user-images.githubusercontent.com/16170090/235320848-b3087abc-9a93-4fcc-831f-834158ef7c00.png">](https://youtu.be/2-hvcQNf69Q)
